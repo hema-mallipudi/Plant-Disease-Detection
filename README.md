@@ -16,4 +16,4 @@ Plant Disease Detection is a machine learning-based application designed to iden
 - Flask /
 - Other libraries: NumPy, Pandas, Matplotlib, Efficientnetb4
 ### Installation
-Clone the repository: https://github.com/Kavyapushpala/Plant_Disease_Detection.git
+Clone the repository:https://github.com/hema-mallipudi/Plant-Disease-Detection
