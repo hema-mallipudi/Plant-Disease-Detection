@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+{% block pagetitle %}
+AI Engine
+{% endblock pagetitle %}
+
+{% block body %}
+<style>
+    /* CSS Variables for Themes */
+    :root {
+        /* Light Theme */
+        --bg-color: #f7f9f2;
+        --text-color: #333333;
+        --primary-green: #1e4530;
+        --secondary-green: #4d7c5a;
+        --accent-gold: #a87d3a;
+        --nav-link-color: #e0f2e0;
+        --card-bg: #ffffff;
+        --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --heading-color: #1e4530;
+    }
+
+    .dark-theme {
+        /* Dark Theme */
+        --bg-color: #1a1a1a;
+        --text-color: #e0e0e0;
+        --primary-green: #3b6044;
+        --secondary-green: #5c8c6a;
+        --accent-gold: #e6b86b;
+        --nav-link-color: #c8e6c9;
+        --card-bg: #2e2e2e;
+        --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        --heading-color: #c8e6c9;
+    }
+
+    /* General Body and Typography */
+    body {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--heading-color);
+    }
+    
+    .text-muted {
+        color: var(--text-color) !important;
+    }
+
+    .p-5.bg-white {
+        background-color: var(--card-bg) !important;
+    }
+
+    .upload-card {
+        background-color: var(--card-bg);
+    }
+    
+    .file-upload-label {
+        background-color: var(--secondary-green);
+        color: var(--nav-link-color);
+    }
+    
+    .btn-outline-success {
+        color: var(--secondary-green) !important;
+        border-color: var(--secondary-green) !important;
+    }
+    .btn-outline-success:hover {
+        background-color: var(--secondary-green) !important;
+        color: var(--card-bg) !important;
+    }
+
+    .text-success {
+        color: var(--secondary-green) !important;
+    }
+
+    /* Additional styles for better dark mode aesthetics */
+    .bg-white {
+        background-color: var(--card-bg) !important;
+    }
+    .shadow {
+        box-shadow: var(--box-shadow);
+    }
+    .modal-content {
+        background-color: var(--card-bg);
+        color: var(--text-color);
+    }
+</style>
+
+<div class="container">
+    <div class="row mb-5 text-center">
+        <div class="col-lg-10 mx-auto">
+            <h1 class="display-4"><b>AgriVision AI Engine</b></h1>
+            <p class="lead text-muted">Identify plant diseases instantly with our AI-powered tool.</p>
+        </div>
+    </div>
+    
+    <div class="text-center mb-4">
+        <h5 class="text-muted"><b>Translate this page:</b></h5>
+        <div id="google_translate_element"></div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto mb-4">
+            <div class="p-5 bg-white shadow rounded-lg text-center">
+                <h4 class="mb-3">Upload Your Plant's Leaf Image</h4>
+                <p class="text-muted mb-4">Simply upload a clear picture of the plant's leaf, and our AI will provide an instant diagnosis.</p>
+                
+                <div class="upload-card">
+                    <i class="fas fa-camera upload-icon"></i>
+                    <h5 class="text-muted">Drop a photo or click to upload</h5>
+                    <p id="file-chosen" class="text-muted"></p>
+                    
+                    <form action="/submit" method="POST" enctype="multipart/form-data">
+                        <input type="file" id="actual-btn" class="file-upload-input" name="image" accept="image/*" />
+                        
+                        <div class="d-flex justify-content-center flex-column flex-md-row gap-3 mt-4">
+                            <label for="actual-btn" class="file-upload-label">Choose File</label>
+                            <label id="camera-btn" class="file-upload-label">Open Camera</label>
+                        </div>
+                        
+                        <div id="camera-container" style="display: none; margin-top: 20px;">
+                            <video id="camera-feed" class="w-100 rounded" autoplay></video>
+                            <button type="button" id="capture-btn" class="btn btn-primary mt-3">Capture Photo</button>
+                        </div>
+                        
+                        <img id="preview" src="#" alt="Camera Photo Preview" class="img-fluid mt-3 rounded" style="display: none;" />
+                        
+                        <button type="submit" class="btn btn-outline-success btn-lg mt-4 w-50">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8 mx-auto">
+            <div class="row gx-4">
+                <div class="col-md-6 mb-4">
+                    <div class="p-4 bg-white shadow rounded-lg h-100">
+                        <h5 class="mb-3">Why Detect Plant Diseases?</h5>
+                        <p id="text-to-translate" class="text-muted">
+                            Accurate and timely diagnosis is crucial for effective plant care. Diseases can severely impact crop yields and quality. Our AI engine helps you identify potential issues quickly, sometimes even before symptoms are clearly visible, saving you time and money. Proper disease identification is the first and most vital step to choosing the right control measures and protecting your plants.
+                        </p>
+                        <button id="speak-btn" class="btn btn-outline-success mt-3">Listen to text</button>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="p-4 bg-white shadow rounded-lg h-100">
+                        <h5 class="mb-3">Prevent Plant Diseases</h5>
+                        <ul class="list-unstyled text-muted">
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Follow good sanitation practices.</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Fertilize to keep plants healthy.</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Inspect new plants before bringing them home.</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Allow soil to warm before planting.</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Ensure proper air circulation.</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Remove diseased stems and foliage promptly.</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Rotate your crops to prevent soil-borne issues.</li>
+                        </ul>
+                        <a target="_blank" href="https://www.thespruce.com/prevent-plant-diseases-in-your-garden-2539511" class="text-decoration-none">
+                            <button type="button" class="btn btn-outline-success mt-3">Learn More</button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Theme switching logic
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const body = document.body;
+
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        body.classList.add(savedTheme);
+        if (savedTheme === 'dark-theme') {
+            themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+        } else {
+            themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+        }
+    } else {
+        // Set default to light theme
+        body.classList.add('light-theme');
+        themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+    }
+
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            if (body.classList.contains('light-theme')) {
+                body.classList.remove('light-theme');
+                body.classList.add('dark-theme');
+                localStorage.setItem('theme', 'dark-theme');
+                themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                body.classList.remove('dark-theme');
+                body.classList.add('light-theme');
+                localStorage.setItem('theme', 'light-theme');
+                themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+        });
+    }
+
+    // Google Translate Initialization
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'en',
+            includedLanguages: 'hi,te',
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+        }, 'google_translate_element');
+    }
+
+    // Text-to-Speech Functionality
+    const textParagraph = document.getElementById('text-to-translate');
+    const speakBtn = document.getElementById('speak-btn');
+    if (speakBtn && textParagraph) {
+        speakBtn.addEventListener('click', () => {
+            const textToSpeak = textParagraph.innerText;
+            if (textToSpeak && window.speechSynthesis) {
+                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("Text-to-speech is not supported or no text is available to speak.");
+            }
+        });
+    }
+
+    // Camera and File Upload Logic
+    const actualBtn = document.getElementById('actual-btn');
+    const cameraBtn = document.getElementById('camera-btn');
+    const captureBtn = document.getElementById('capture-btn');
+    const fileChosen = document.getElementById('file-chosen');
+    const cameraContainer = document.getElementById('camera-container');
+    const cameraFeed = document.getElementById('camera-feed');
+    const preview = document.getElementById('preview');
+
+    // Handle file selection
+    actualBtn.addEventListener('change', function () {
+        fileChosen.textContent = this.files.length > 0 ? this.files[0].name : "No file chosen";
+        cameraContainer.style.display = 'none';
+        preview.style.display = 'none';
+        stopCamera();
+    });
+
+    // Handle camera button click
+    cameraBtn.addEventListener('click', function () {
+        cameraContainer.style.display = 'block';
+        preview.style.display = 'none';
+        actualBtn.value = null; // Clear file input
+        fileChosen.textContent = "Camera activated...";
+        startCamera();
+    });
+
+    // Start camera stream
+    function startCamera() {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function (stream) {
+                cameraFeed.srcObject = stream;
+            })
+            .catch(function (error) {
+                console.log('Error accessing the camera: ', error);
+                alert("Could not access camera. Please check permissions or use file upload.");
+            });
+    }
+
+    // Stop camera stream
+    function stopCamera() {
+        if (cameraFeed.srcObject) {
+            cameraFeed.srcObject.getTracks().forEach(track => track.stop());
+        }
+    }
+
+    // Capture photo from camera
+    captureBtn.addEventListener('click', function () {
+        const canvas = document.createElement('canvas');
+        canvas.width = cameraFeed.videoWidth;
+        canvas.height = cameraFeed.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(cameraFeed, 0, 0, canvas.width, canvas.height);
+        
+        const dataUrl = canvas.toDataURL('image/jpeg');
+        const imageBlob = dataURItoBlob(dataUrl);
+        const capturedFile = new File([imageBlob], "captured_image.jpg", { type: 'image/jpeg' });
+
+        // Set the captured file to the input element for submission
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(capturedFile);
+        actualBtn.files = dataTransfer.files;
+
+        fileChosen.textContent = capturedFile.name;
+        preview.src = dataUrl;
+        preview.style.display = 'block';
+        cameraContainer.style.display = 'none';
+        stopCamera();
+    });
+
+    // Utility function to convert Data URI to Blob
+    function dataURItoBlob(dataURI) {
+        const byteString = atob(dataURI.split(',')[1]);
+        const arrayBuffer = new ArrayBuffer(byteString.length);
+        const uintArray = new Uint8Array(arrayBuffer);
+        for (let i = 0; i < byteString.length; i++) {
+            uintArray[i] = byteString.charCodeAt(i);
+        }
+        return new Blob([uintArray], { type: 'image/jpeg' });
+    }
+</script>
+
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+{% endblock body %}
